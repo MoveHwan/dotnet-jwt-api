@@ -6,6 +6,8 @@
         public T? Data { get; set; }
         public string Message { get; set; } = string.Empty;
 
+        public List<string>? Errors { get; set; }
+
         // 성공 응답
         public static ApiResponse<T> SuccessResponse(T data, string message = "요청 성공")
         {
@@ -13,18 +15,32 @@
             {
                 Success = true,
                 Data = data,
-                Message = message
+                Message = message,
+                Errors = null
             };
         }
 
-        // 실패 응답
+        // 일반 실패 응답
         public static ApiResponse<T> FailResponse(string message = "요청 실패")
         {
             return new ApiResponse<T>
             {
                 Success = false,
                 Data = default,
-                Message = message
+                Message = message,
+                Errors = null
+            };
+        }
+
+        // 🔥 Validation 등 상세 에러용
+        public static ApiResponse<T> FailResponse(string message, List<string> errors)
+        {
+            return new ApiResponse<T>
+            {
+                Success = false,
+                Data = default,
+                Message = message,
+                Errors = errors
             };
         }
     }

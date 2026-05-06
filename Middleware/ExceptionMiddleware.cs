@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using Test.DTOs.Common;
 
 namespace Test.Middleware
 {
@@ -28,8 +29,16 @@ namespace Test.Middleware
             }
             catch (FluentValidation.ValidationException ex)
             {
-                var errors = ex.Errors.Select(e => e.ErrorMessage);
-                await HandleException(context, HttpStatusCode.BadRequest, string.Join(", ", errors));
+                var errors = ex.Errors
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                var response = ApiResponse<List<string>>.FailResponse("Validation failed", errors);
+
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsJsonAsync(response);
             }
             catch (Exception ex)
             {
