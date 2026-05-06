@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Test.Data;
+using Test.DTOs.Common;
+using Test.DTOs.Post;
 using Test.Interfaces;
 using Test.Models;
 
@@ -14,14 +16,50 @@ namespace Test.Repositories
             _context = context;
         }
 
-        public async Task<List<Post>> GetPagedAsync(int page, int pageSize)
+        public async Task<PagedResponse<PostResponse>> GetPagedResponseAsync(int page, int pageSize)
         {
-            return await _context.Posts
-                .Include(p => p.User)
+            var query = _context.Posts.AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Select(p => new PostResponse
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Content = p.Content,
+                    AuthorName = p.User.Name,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
                 .ToListAsync();
+
+            return new PagedResponse<PostResponse>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<PostResponse?> GetPostResponseByIdAsync(int id)
+        {
+            return await _context.Posts
+                .Where(p => p.Id == id)
+                .Select(p => new PostResponse
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Content = p.Content,
+                    AuthorName = p.User.Name,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<Post?> GetByIdAsync(int id)

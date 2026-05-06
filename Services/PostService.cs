@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Test.DTOs.Common;
 using Test.DTOs.Post;
 using Test.Interfaces;
 using Test.Models;
@@ -18,11 +20,14 @@ namespace Test.Services
             _mapper = mapper;
         }
 
-        public async Task<List<PostResponse>> GetPostsAsync(int page, int pageSize)
+        public async Task<PagedResponse<PostResponse>> GetPostsAsync(int page, int pageSize)
         {
-            var posts = await _postRepository.GetPagedAsync(page, pageSize);
+            return await _postRepository.GetPagedResponseAsync(page, pageSize);
+        }
 
-            return _mapper.Map<List<PostResponse>>(posts);
+        public async Task<PostResponse?> GetByIdAsync(int postId)
+        {
+            return await _postRepository.GetPostResponseByIdAsync(postId);
         }
 
         public async Task<PostResponse?> CreateAsync(int userId, CreatePostRequest request)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Test.DTOs.Auth;
+using Test.DTOs.Common;
 using Test.DTOs.User;
 using Test.Interfaces;
 
@@ -26,7 +27,12 @@ namespace Test.Controllers
         public async Task<IActionResult> CreateUserAsync(CreateUserRequest request)
         {
             var response = await _userService.CreateAsync(request);
-            return Ok(response);
+
+            return CreatedAtAction(
+                nameof(GetUserByIdAsync),
+                new { id = response.Id },
+                ApiResponse<UserResponse>.SuccessResponse(response, "유저 생성 성공")
+            );
         }
 
 
@@ -34,8 +40,8 @@ namespace Test.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUsersAsync()
         {
-            var response = await _userService.GetAllAsync(); // 로직은 서비스가 처리
-            return Ok(response);
+            var response = await _userService.GetAllAsync();
+            return Ok(ApiResponse<List<UserResponse>>.SuccessResponse(response));
         }
 
         // 해당 id 유저 조회
@@ -43,9 +49,9 @@ namespace Test.Controllers
         public async Task<IActionResult> GetUserByIdAsync(int id)
         {
             var response = await _userService.GetByIdAsync(id);
-            if (response == null) return NotFound();
+            if (response == null) return NotFound(ApiResponse<UserResponse>.FailResponse("유저 없음"));
 
-            return Ok(response);
+            return Ok(ApiResponse<UserResponse>.SuccessResponse(response));
         }
 
         // 해당 id 유저 수정
@@ -53,9 +59,9 @@ namespace Test.Controllers
         public async Task<IActionResult> UpdateUserAsync(int id, CreateUserRequest request)
         {
             var response = await _userService.UpdateAsync(id, request);
-            if (response == null) return NotFound();
+            if (response == null) return NotFound(ApiResponse<UserResponse>.FailResponse("유저 없음"));
 
-            return Ok(response);
+            return Ok(ApiResponse<UserResponse>.SuccessResponse(response, "유저 수정 성공"));
         }
 
         // 해당 id 유저 삭제
@@ -64,10 +70,9 @@ namespace Test.Controllers
         public async Task<IActionResult> DeleteUserAsync(int id)
         {
             var response = await _userService.DeleteAsync(id);
-            if (!response) return NotFound();
+            if (!response) return NotFound(ApiResponse<string>.FailResponse("유저 없음"));
 
-            return Ok("Delete Complete");
-
+            return Ok(ApiResponse<string>.SuccessResponse("삭제 완료"));
         }
 
         // 로그인
@@ -77,9 +82,9 @@ namespace Test.Controllers
             var response = await _userService.LoginAsync(request);
 
             if (response == null)
-                return Unauthorized("아이디 또는 비밀번호 틀림");
+                return Unauthorized(ApiResponse<TokenResponse>.FailResponse("아이디 또는 비밀번호 틀림"));
 
-            return Ok(response);
+            return Ok(ApiResponse<TokenResponse>.SuccessResponse(response));
         }
 
         [HttpPost("refresh")]
@@ -88,16 +93,16 @@ namespace Test.Controllers
             var response = await _userService.RefreshTokenAsync(request.RefreshToken);
 
             if (response == null)
-                return Unauthorized();
+                return Unauthorized(ApiResponse<TokenResponse>.FailResponse("재인증 실패"));
 
-            return Ok(response);
+            return Ok(ApiResponse<TokenResponse>.SuccessResponse(response));
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("admin-only")]
         public IActionResult AdminOnly()
         {
-            return Ok("관리자만 접근 가능");
+            return Ok(ApiResponse<string>.SuccessResponse("관리자만 접근 가능"));
         }
 
 
