@@ -19,7 +19,7 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 // SQLite 연결 문자열
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // JWT
 var key = builder.Configuration["Jwt:Key"] 
