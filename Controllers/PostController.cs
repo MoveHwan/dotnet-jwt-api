@@ -23,11 +23,19 @@ namespace Test.Controllers
         // 전체 글 조회
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetPosts(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetPosts(
+            int page = 1,
+            int pageSize = 10,
+            string? search = null,
+            string sort = "latest",
+            string? author = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null
+        )
         {
-            var responses = await _postService.GetPostsAsync(page, pageSize);
+            var response = await _postService.GetPostsAsync(page, pageSize, search, sort, author, fromDate, toDate);
 
-            return Ok(ApiResponse<PagedResponse<PostResponse>>.SuccessResponse(responses));
+            return Ok(ApiResponse<PagedResponse<PostResponse>>.SuccessResponse(response));
         }
 
         // 단일 글 조회

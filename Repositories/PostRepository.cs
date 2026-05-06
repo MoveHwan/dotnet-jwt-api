@@ -16,14 +16,58 @@ namespace Test.Repositories
             _context = context;
         }
 
-        public async Task<PagedResponse<PostResponse>> GetPagedResponseAsync(int page, int pageSize)
+        public async Task<PagedResponse<PostResponse>> GetPagedResponseAsync(
+             int page,
+             int pageSize,
+             string? search,
+             string sort,
+             string? author,
+             DateTime? fromDate,
+             DateTime? toDate
+        )
         {
             var query = _context.Posts.AsQueryable();
+
+            // query = query.Where(...) => 조건은 계속 누적됨
+            // Where → OrderBy → Count → Skip/Take → Select
+            // 위 순서를 유지해야 성능이 좋다
+
+            // 검색 (제목 + 내용)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(p =>
+                    p.Title.Contains(search) ||
+                    p.Content.Contains(search));
+            }
+
+            // 작성자 필터
+            if (!string.IsNullOrWhiteSpace(author))
+            {
+                query = query.Where(p => p.User.Name.Contains(author));
+            }
+
+            // 날짜 필터
+            if (fromDate.HasValue)
+            {
+                query = query.Where(p => p.CreatedAt >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(p => p.CreatedAt <= toDate.Value);
+            }
+
+            // 정렬
+            query = sort switch
+            {
+                "oldest" => query.OrderBy(p => p.CreatedAt),
+                "title" => query.OrderBy(p => p.Title),
+                _ => query.OrderByDescending(p => p.CreatedAt) // latest
+            };
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(p => p.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(p => new PostResponse

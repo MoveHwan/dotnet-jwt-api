@@ -6,7 +6,15 @@ namespace Test.Interfaces
 {
     public interface IPostRepository
     {
-        Task<PagedResponse<PostResponse>> GetPagedResponseAsync(int page, int pageSize);
+        Task<PagedResponse<PostResponse>> GetPagedResponseAsync(
+            int page,
+            int pageSize,
+            string? search,
+            string sort,
+            string? author,
+            DateTime? fromDate,
+            DateTime? toDate
+        );
         Task<PostResponse?> GetPostResponseByIdAsync(int id);
         Task<Post?> GetByIdAsync(int id);
         Task AddAsync(Post post);

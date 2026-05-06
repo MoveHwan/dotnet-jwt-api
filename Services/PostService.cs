@@ -20,9 +20,17 @@ namespace Test.Services
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<PostResponse>> GetPostsAsync(int page, int pageSize)
+        public async Task<PagedResponse<PostResponse>> GetPostsAsync(
+            int page,
+            int pageSize,
+            string? search,
+            string sort,
+            string? author,
+            DateTime? fromDate,
+            DateTime? toDate
+        )
         {
-            return await _postRepository.GetPagedResponseAsync(page, pageSize);
+            return await _postRepository.GetPagedResponseAsync(page, pageSize, search, sort, author, fromDate, toDate);
         }
 
         public async Task<PostResponse?> GetByIdAsync(int postId)
