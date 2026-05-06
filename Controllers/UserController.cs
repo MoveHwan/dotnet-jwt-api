@@ -29,7 +29,7 @@ namespace Test.Controllers
             var response = await _userService.CreateAsync(request);
 
             return CreatedAtAction(
-                nameof(GetUserByIdAsync),
+                "GetUserById",
                 new { id = response.Id },
                 ApiResponse<UserResponse>.SuccessResponse(response, "유저 생성 성공")
             );
@@ -45,7 +45,7 @@ namespace Test.Controllers
         }
 
         // 해당 id 유저 조회
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetUserById")]
         public async Task<IActionResult> GetUserByIdAsync(int id)
         {
             var response = await _userService.GetByIdAsync(id);
