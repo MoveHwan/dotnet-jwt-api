@@ -12,6 +12,7 @@
         // Role 추가
         public string Role { get; set; } = "User"; // 기본값 user
         public List<RefreshToken> RefreshTokens { get; set; } = new();
+        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

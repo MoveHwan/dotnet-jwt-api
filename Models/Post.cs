@@ -18,6 +18,8 @@ namespace Test.Models
         // 네비게이션 속성
         public User? User { get; set; }
 
+        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
         // 생성일
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
