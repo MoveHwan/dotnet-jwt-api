@@ -95,6 +95,12 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Test API",
+        Version = "v1"
+    });
+
     // JWT 인증 정의 추가
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -103,7 +109,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Bearer {토큰} 형식으로 입력하세요"
+        Description = "JWT Token Enter"
     });
 
     // 모든 API에 적용
@@ -118,7 +124,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });

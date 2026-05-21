@@ -104,6 +104,12 @@ Authorization: Bearer {token}
 
 <br>
 
+## ERD
+
+![ERD](./assets/erd.png)
+
+<br>
+
 ## Troubleshooting
 
 #### SQLite → PostgreSQL Migration
