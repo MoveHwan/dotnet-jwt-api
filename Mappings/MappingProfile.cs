@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
-using Test.Models;
+using Test.DTOs.Comment;
 using Test.DTOs.Post;
 using Test.DTOs.User;
+using Test.Models;
 
 namespace Test.Mappings
 {
@@ -9,13 +10,16 @@ namespace Test.Mappings
     {
         public MappingProfile()
         {
-            // Post → PostResponse
+            // Post => PostResponse
             CreateMap<Post, PostResponse>()
                 .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.Name));
 
-            // User → UserResponse
+            // User => UserResponse
             CreateMap<User, UserResponse>();
+
+            //Comment => CommentResponse
+            CreateMap<Comment, CommentResponse>();
         }
     }
 }
