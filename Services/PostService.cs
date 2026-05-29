@@ -3,7 +3,6 @@ using Test.DTOs.Common;
 using Test.DTOs.Post;
 using Test.Interfaces;
 using Test.Models;
-using Test.Repositories;
 
 namespace Test.Services
 {
@@ -14,6 +13,7 @@ namespace Test.Services
         private readonly IPostLikeRepository _postLikeRepository;
         private readonly IMapper _mapper;
 
+        // 생성자
         public PostService(IUserRepository userRepository, IPostRepository postRepository, IPostLikeRepository  postLikeRepository,IMapper mapper)
         {
             _userRepository = userRepository;
@@ -22,6 +22,7 @@ namespace Test.Services
             _mapper = mapper;
         }
 
+        // 전체 글 조회 서비스
         public async Task<PagedResponse<PostResponse>> GetPostsAsync(PostQueryRequest query)
         {
             var posts = await _postRepository.GetPagedAsync(query);
@@ -30,6 +31,7 @@ namespace Test.Services
 
             var responses = _mapper.Map<List<PostResponse>>(posts);
 
+            // 좋아요 수
             foreach (var response in responses)
             {
                 response.LikeCount = await _postLikeRepository.CountByPostIdAsync(response.Id);
@@ -46,6 +48,7 @@ namespace Test.Services
             };
         }
 
+        // 단일 글 조회 서비스
         public async Task<PostResponse?> GetByIdAsync(int postId, int? userId = null)
         {
             var post = await _postRepository.GetByIdAsync(postId);
@@ -59,6 +62,7 @@ namespace Test.Services
 
             response.AuthorName = user?.Name ?? "";
 
+            // 댓글 조회
             foreach (var comment in response.Comments)
             {
                 var commentUser = await _userRepository.GetByIdAsync(comment.UserId);
@@ -66,8 +70,9 @@ namespace Test.Services
                 comment.AuthorName = commentUser?.Name ?? "";
             }
 
+            // 좋아요 수
             response.LikeCount = await _postLikeRepository.CountByPostIdAsync(post.Id);
-
+            // 좋아요 체크
             if (userId.HasValue)
                 response.IsLiked = await _postLikeRepository.GetAsync(userId.Value, post.Id) != null;
             
@@ -75,13 +80,36 @@ namespace Test.Services
             return response;
         }
 
+        // 글 생성 서비스
         public async Task<PostResponse?> CreateAsync(int userId, CreatePostRequest request)
         {
+            string? imageUrl = null;
+
+            //게시글 이미지
+            if (request.Image != null)
+            {
+                // Guid.NewGuid() : 랜덤 고유값 생성.
+                // Path.GetExtension() : 확장자 추출. ex).png...
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.Image.FileName)}";
+
+                // 운영체제마다 경로 구분자가 다를 수 있어서 Path.Combine 사용. ex) Window "\", Linux "/"...
+                var uploadPath = Path.Combine("wwwroot/uploads", fileName);
+
+                // using var : 작업이 끝나면 자동으로 Dispose() 실행하여 파일 리소스 정리
+                using var stream = new FileStream(uploadPath, FileMode.Create);
+
+                // 실제 디스크에 파일 저장
+                await request.Image.CopyToAsync(stream);
+
+                imageUrl = $"/uploads/{fileName}";
+            }
+
             var post = new Post
             {
                 UserId = userId,
                 Title = request.Title,
                 Content = request.Content,
+                ImageUrl = imageUrl,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -96,6 +124,7 @@ namespace Test.Services
             return response;
         }
 
+        // 글 수정 서비스
         public async Task<PostResponse?> UpdateAsync(int postId, int userId, UpdatePostRequest request)
         {
             var post = await _postRepository.GetByIdAsync(postId);
@@ -121,6 +150,7 @@ namespace Test.Services
             return response;
         }
 
+        // 글 삭제 서비스
         public async Task<bool> DeleteAsync(int postId, int userId)
         {
             var post = await _postRepository.GetByIdAsync(postId);

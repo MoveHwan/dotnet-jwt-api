@@ -155,6 +155,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthentication(); // ¿Œ¡ı

@@ -14,6 +14,8 @@ namespace Test.DTOs.Post
         public int LikeCount { get; set; }
         public bool IsLiked { get; set; }
 
+        public string? ImageUrl { get; set; }
+
         public List<CommentResponse> Comments { get; set; } = new();
 
         public DateTime CreatedAt { get; set; }

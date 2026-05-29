@@ -1,21 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Test.DTOs.Auth;
 using Test.DTOs.Common;
 using Test.DTOs.Post;
-using Test.DTOs.User;
 using Test.Services;
 
 namespace Test.Controllers
 {
-    [ApiController]
+    [ApiController] // [ApiController] 붙어 있으면 ASP.NET Core가 자동 추론도 한다. FromBody, FromQuery...
     [Route("api/posts")]
     public class PostController : ControllerBase
     {
         private readonly PostService _postService;
         private readonly PostLikeService _postLikeService;
 
+        // 생성자
         public PostController(PostService postService, PostLikeService postLikeService)
         {
             _postService = postService;
@@ -58,7 +57,7 @@ namespace Test.Controllers
         // 글 생성
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreatePost(CreatePostRequest request)
+        public async Task<IActionResult> CreatePost([FromForm] CreatePostRequest request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -74,12 +73,12 @@ namespace Test.Controllers
                 new { id = response.Id }, 
                 ApiResponse<PostResponse>.SuccessResponse(response, "글 생성 성공")
             );
-        }
+        }// 기본 JSON 요청 => application/json, 파일 업로드 요청 => multipart/form-data
 
         // 글 수정
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePost(int id, UpdatePostRequest request)
+        public async Task<IActionResult> UpdatePost(int id, [FromForm] UpdatePostRequest request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
