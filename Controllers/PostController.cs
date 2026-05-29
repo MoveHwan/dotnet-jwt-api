@@ -23,17 +23,10 @@ namespace Test.Controllers
         // 전체 글 조회
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetPosts(
-            int page = 1,
-            int pageSize = 10,
-            string? search = null,
-            string sort = "latest",
-            string? author = null,
-            DateTime? fromDate = null,
-            DateTime? toDate = null
-        )
+        [HttpGet]
+        public async Task<IActionResult> GetPosts([FromQuery] PostQueryRequest query) // [FromQuery] : QueryString 자동 바인딩
         {
-            var response = await _postService.GetPostsAsync(page, pageSize, search, sort, author, fromDate, toDate);
+            var response = await _postService.GetPostsAsync(query);
 
             return Ok(ApiResponse<PagedResponse<PostResponse>>.SuccessResponse(response));
         }

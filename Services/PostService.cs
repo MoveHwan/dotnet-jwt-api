@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Test.DTOs.Common;
 using Test.DTOs.Post;
 using Test.Interfaces;
@@ -20,22 +21,32 @@ namespace Test.Services
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<PostResponse>> GetPostsAsync(
-            int page,
-            int pageSize,
-            string? search,
-            string sort,
-            string? author,
-            DateTime? fromDate,
-            DateTime? toDate
-        )
+        public async Task<PagedResponse<PostResponse>> GetPostsAsync(PostQueryRequest query)
         {
-            return await _postRepository.GetPagedResponseAsync(page, pageSize, search, sort, author, fromDate, toDate);
+            var posts = await _postRepository.GetPagedAsync(query);
+
+            var totalCount = await _postRepository
+                .CountAsync(query.Keyword);
+
+            var responses = _mapper
+                .Map<List<PostResponse>>(posts);
+
+            return new PagedResponse<PostResponse>
+            {
+                Items = responses,
+                Page = query.Page,
+                PageSize = query.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(
+                    (double)totalCount / query.PageSize)
+            };
         }
 
         public async Task<PostResponse?> GetByIdAsync(int postId)
         {
-            return await _postRepository.GetPostResponseByIdAsync(postId);
+            var post = await _postRepository.GetByIdAsync(postId);
+
+            return _mapper.Map<PostResponse>(post);
         }
 
         public async Task<PostResponse?> CreateAsync(int userId, CreatePostRequest request)

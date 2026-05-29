@@ -16,94 +16,43 @@ namespace Test.Repositories
             _context = context;
         }
 
-        public async Task<PagedResponse<PostResponse>> GetPagedResponseAsync(
-             int page,
-             int pageSize,
-             string? search,
-             string sort,
-             string? author,
-             DateTime? fromDate,
-             DateTime? toDate
-        )
+        public async Task<List<Post>> GetPagedAsync(PostQueryRequest query)
         {
-            var query = _context.Posts.AsQueryable();
+            // AsQueryable() : 동적으로 조건 추가 가능
+            var postsQuery = _context.Posts.AsQueryable();
 
-            // query = query.Where(...) => 조건은 계속 누적됨
-            // Where → OrderBy → Count → Skip/Take → Select
-            // 위 순서를 유지해야 성능이 좋다
-
-            // 검색 (제목 + 내용)
-            if (!string.IsNullOrWhiteSpace(search))
+            // 검색
+            if (!string.IsNullOrWhiteSpace(query.Keyword))
             {
-                query = query.Where(p =>
-                    p.Title.Contains(search) ||
-                    p.Content.Contains(search));
-            }
-
-            // 작성자 필터
-            if (!string.IsNullOrWhiteSpace(author))
-            {
-                query = query.Where(p => p.User.Name.Contains(author));
-            }
-
-            // 날짜 필터
-            if (fromDate.HasValue)
-            {
-                query = query.Where(p => p.CreatedAt >= fromDate.Value);
-            }
-
-            if (toDate.HasValue)
-            {
-                query = query.Where(p => p.CreatedAt <= toDate.Value);
+                postsQuery = postsQuery.Where(p =>
+                    p.Title.Contains(query.Keyword));
             }
 
             // 정렬
-            query = sort switch
+            postsQuery = query.SortBy.ToLower() switch
             {
-                "oldest" => query.OrderBy(p => p.CreatedAt),
-                "title" => query.OrderBy(p => p.Title),
-                _ => query.OrderByDescending(p => p.CreatedAt) // latest
+                "oldest" => postsQuery.OrderBy(p => p.CreatedAt),
+                _ => postsQuery.OrderByDescending(p => p.CreatedAt)
             };
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(p => new PostResponse
-                {
-                    Id = p.Id,
-                    Title = p.Title,
-                    Content = p.Content,
-                    AuthorName = p.User.Name,
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
-                })
+            // 페이징
+            return await postsQuery
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .ToListAsync();
-
-            return new PagedResponse<PostResponse>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                Page = page,
-                PageSize = pageSize
-            };
         }
 
-        public async Task<PostResponse?> GetPostResponseByIdAsync(int id)
+        public async Task<int> CountAsync(string? keyword)
         {
-            return await _context.Posts
-                .Where(p => p.Id == id)
-                .Select(p => new PostResponse
-                {
-                    Id = p.Id,
-                    Title = p.Title,
-                    Content = p.Content,
-                    AuthorName = p.User.Name,
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
-                })
-                .FirstOrDefaultAsync();
+            var query = _context.Posts.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(p =>
+                    p.Title.Contains(keyword));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<Post?> GetByIdAsync(int id)
