@@ -9,20 +9,19 @@ namespace Test.Models
         [Required]
         [MaxLength(100)]
         public string Title { get; set; }
-
         public string Content { get; set; } = string.Empty;
-
         // 외래키
         public int UserId { get; set; }
-
         // 네비게이션 속성
         public User? User { get; set; }
 
+
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+        public List<PostLike> PostLikes { get; set; } = new();
+
 
         // 생성일
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
         // 수정일
         public DateTime? UpdatedAt { get; set; }
     }
