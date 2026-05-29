@@ -14,10 +14,12 @@ namespace Test.Controllers
     public class PostController : ControllerBase
     {
         private readonly PostService _postService;
+        private readonly PostLikeService _postLikeService;
 
-        public PostController(PostService postService)
+        public PostController(PostService postService, PostLikeService postLikeService)
         {
             _postService = postService;
+            _postLikeService = postLikeService;
         }
 
         // 전체 글 조회
@@ -36,7 +38,16 @@ namespace Test.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPostById(int id)
         {
-            var response = await _postService.GetByIdAsync(id);
+            int? userId = null;
+
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim != null)
+                userId = int.Parse(userIdClaim.Value);
+            
+
+            var response = await _postService.GetByIdAsync(id, userId);
 
             if (response == null)
                 return NotFound(ApiResponse<PostResponse>.FailResponse("글 없음"));
@@ -103,6 +114,25 @@ namespace Test.Controllers
                 return NotFound(ApiResponse<string>.FailResponse("글 삭제 실패"));
 
             return Ok(ApiResponse<string>.SuccessResponse("삭제 완료"));
+        }
+
+        // 글 좋아요
+        [Authorize]
+        [HttpPost("{id}/like")]
+        public async Task<IActionResult> ToggleLike(int id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized(ApiResponse<string>.FailResponse("인증 실패"));
+            
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var liked = await _postLikeService.ToggleLikeAsync(userId, id);
+            var message = liked ? "좋아요 추가" : "좋아요 취소";
+
+            return Ok(ApiResponse<string>.SuccessResponse(message));
         }
     }
 }

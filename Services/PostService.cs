@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Test.DTOs.Common;
 using Test.DTOs.Post;
 using Test.Interfaces;
 using Test.Models;
+using Test.Repositories;
 
 namespace Test.Services
 {
@@ -12,12 +11,14 @@ namespace Test.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IPostRepository _postRepository;
+        private readonly IPostLikeRepository _postLikeRepository;
         private readonly IMapper _mapper;
 
-        public PostService(IUserRepository userRepository, IPostRepository postRepository, IMapper mapper)
+        public PostService(IUserRepository userRepository, IPostRepository postRepository, IPostLikeRepository  postLikeRepository,IMapper mapper)
         {
             _userRepository = userRepository;
             _postRepository = postRepository;
+            _postLikeRepository = postLikeRepository;
             _mapper = mapper;
         }
 
@@ -25,11 +26,14 @@ namespace Test.Services
         {
             var posts = await _postRepository.GetPagedAsync(query);
 
-            var totalCount = await _postRepository
-                .CountAsync(query.Keyword);
+            var totalCount = await _postRepository.CountAsync(query.Keyword);
 
-            var responses = _mapper
-                .Map<List<PostResponse>>(posts);
+            var responses = _mapper.Map<List<PostResponse>>(posts);
+
+            foreach (var response in responses)
+            {
+                response.LikeCount = await _postLikeRepository.CountByPostIdAsync(response.Id);
+            }
 
             return new PagedResponse<PostResponse>
             {
@@ -42,7 +46,7 @@ namespace Test.Services
             };
         }
 
-        public async Task<PostResponse?> GetByIdAsync(int postId)
+        public async Task<PostResponse?> GetByIdAsync(int postId, int? userId = null)
         {
             var post = await _postRepository.GetByIdAsync(postId);
 
@@ -61,6 +65,12 @@ namespace Test.Services
 
                 comment.AuthorName = commentUser?.Name ?? "";
             }
+
+            response.LikeCount = await _postLikeRepository.CountByPostIdAsync(post.Id);
+
+            if (userId.HasValue)
+                response.IsLiked = await _postLikeRepository.GetAsync(userId.Value, post.Id) != null;
+            
 
             return response;
         }

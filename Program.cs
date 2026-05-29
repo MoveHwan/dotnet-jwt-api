@@ -83,11 +83,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IPostLikeRepository,PostLikeRepository>();
 
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<CommentService>();
+builder.Services.AddScoped<PostLikeService>();
 
 builder.Services.AddControllers();
 
