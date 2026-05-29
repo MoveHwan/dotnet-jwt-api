@@ -46,7 +46,23 @@ namespace Test.Services
         {
             var post = await _postRepository.GetByIdAsync(postId);
 
-            return _mapper.Map<PostResponse>(post);
+            if (post == null)
+                return null;
+
+            var response = _mapper.Map<PostResponse>(post);
+
+            var user = await _userRepository.GetByIdAsync(post.UserId);
+
+            response.AuthorName = user?.Name ?? "";
+
+            foreach (var comment in response.Comments)
+            {
+                var commentUser = await _userRepository.GetByIdAsync(comment.UserId);
+
+                comment.AuthorName = commentUser?.Name ?? "";
+            }
+
+            return response;
         }
 
         public async Task<PostResponse?> CreateAsync(int userId, CreatePostRequest request)

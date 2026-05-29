@@ -1,4 +1,6 @@
-﻿namespace Test.DTOs.Post
+﻿using Test.DTOs.Comment;
+
+namespace Test.DTOs.Post
 {
     public class PostResponse
     {
@@ -8,6 +10,8 @@
 
         public int AuthorId { get; set; }
         public string AuthorName { get; set; }
+
+        public List<CommentResponse> Comments { get; set; } = new();
 
         public DateTime CreatedAt { get; set; }
 
