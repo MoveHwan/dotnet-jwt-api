@@ -7,7 +7,7 @@ using Test.Services;
 
 namespace Test.Controllers
 {
-    [ApiController] // [ApiController] 붙어 있으면 ASP.NET Core가 자동 추론도 한다. FromBody, FromQuery...
+    [ApiController] // [ApiController] 붙어 있으면 ASP.NET Core가 자동 추론도 한다. FromBody, FromQuery. FromForm, FromRoute, FromHeader..
     [Route("api/posts")]
     public class PostController : ControllerBase
     {

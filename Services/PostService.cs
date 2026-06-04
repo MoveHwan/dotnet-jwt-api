@@ -93,7 +93,12 @@ namespace Test.Services
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.Image.FileName)}";
 
                 // 운영체제마다 경로 구분자가 다를 수 있어서 Path.Combine 사용. ex) Window "\", Linux "/"...
-                var uploadPath = Path.Combine("wwwroot/uploads", fileName);
+                var uploadFolder = Path.Combine("wwwroot", "uploads");
+
+                // 폴더 없으면 생성
+                Directory.CreateDirectory(uploadFolder);
+
+                var uploadPath = Path.Combine(uploadFolder, fileName);
 
                 // using var : 작업이 끝나면 자동으로 Dispose() 실행하여 파일 리소스 정리
                 using var stream = new FileStream(uploadPath, FileMode.Create);
