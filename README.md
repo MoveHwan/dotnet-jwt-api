@@ -1,6 +1,6 @@
 # JWT Board API
 
-JWT 기반 인증과 게시판 기능을 제공하는 RESTful API 서버입니다.
+JWT 기반 인증과 게시판 기능을 제공하는 RESTful API 서버입니다.<br>
 ASP.NET Core 8, PostgreSQL, JWT Authentication을 활용하여 구현했습니다.
 
 <br>
