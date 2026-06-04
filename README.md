@@ -14,6 +14,8 @@ JWT 기반 게시판 API 서버입니다.
 
 <br>
 
+
+
 ## Tech Stack
 
 ![.NET](https://img.shields.io/badge/.NET_8-512BD4?style=flat&logo=dotnet&logoColor=white)
@@ -42,6 +44,58 @@ JWT 기반 게시판 API 서버입니다.
 - 정렬 기능
 - 페이징 처리
 
+### Comment
+- 댓글 CRUD
+
+### Like
+- 좋아요
+- 좋아요 취소
+- 좋아요 개수
+- lsLiked
+
+### Common
+- Global Exception Middleware
+- FluentValidation
+- ApiResponse 응답 통일
+- AutoMapper
+
+<br>
+
+## API Endpoints
+
+### Auth
+
+```http
+POST   /api/users/register   # 회원가입
+POST   /api/users/login      # 로그인
+POST   /api/users/refresh    # 토큰 재발급
+```
+
+### Posts
+
+```http
+GET    /api/posts            # 게시글 목록
+GET    /api/posts/{id}       # 게시글 상세
+POST   /api/posts            # 게시글 생성
+PUT    /api/posts/{id}       # 게시글 수정
+DELETE /api/posts/{id}       # 게시글 삭제
+```
+
+### Comments
+
+```http
+POST   /api/comments         # 댓글 생성
+PUT    /api/comments/{id}    # 댓글 수정
+DELETE /api/comments/{id}    # 댓글 삭제
+```
+
+### Likes
+
+```http
+POST   /api/posts/{id}/like  # 좋아요 토글
+```
+
+
 <br>
 
 ## Project Structure
@@ -50,10 +104,13 @@ JWT 기반 게시판 API 서버입니다.
 Controllers/
 Services/
 Repositories/
-DTOs/
-Middleware/
+Interfaces/
 Models/
+DTOs/
+Validators/
+Middleware/
 Data/
+Mappings/
 ```
 
 <br>
@@ -116,13 +173,21 @@ Authorization: Bearer {token}
 #### SQLite → PostgreSQL Migration
 
 #### 문제
-- connection string format error 발생
-- Render 배포 환경에서 SQLite 영속성 문제 발생
+- connection string format error
+- Migration 적용 오류
 
 #### 해결
-- PostgreSQL로 마이그레이션
 - Npgsql Provider 적용
-- Render PostgreSQL 사용
+- PostgreSQL Connection String 수정
+- EF Core Migration 재생성
+
+<br>
+
+## Future Improvements
+- AWS S3 기반 이미지 저장
+- Redis 캐싱 적용
+- Unit Test 추가
+- CQRS 패턴 적용 검토
 
 <br>
 
